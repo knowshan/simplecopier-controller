@@ -1,3 +1,6 @@
+[![Docker](https://github.com/knowshan/simplecopier-controller/actions/workflows/docker-publish.yml/badge.svg?branch=main)](https://github.com/knowshan/simplecopier-controller/actions/workflows/docker-publish.yml)'
+
+
 # Simple Copier for K8s Deployments
 
 ![copier-controller-demo-gif](./copier-controller-demo.gif)
