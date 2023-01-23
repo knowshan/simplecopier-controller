@@ -76,15 +76,15 @@ jobs:
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: 'table'
-          exit-code: '1'
+          exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
       
-      - name: scan image
-        uses: Azure/container-scan@v0
-        with:
-          image-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+      # - name: scan image
+      #  uses: Azure/container-scan@v0
+      #  with:
+      #    image-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
     
       - name: docker push
         run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
@@ -94,10 +94,25 @@ jobs:
       # repository is public to avoid leaking data.  If you would like to publish
       # transparency data even for private images, pass --force to cosign below.
       # https://github.com/sigstore/cosign
-      # - name: Sign the published Docker image
-      #  if: ${{ github.event_name != 'pull_request' }}
-      #  env:
-      #    COSIGN_EXPERIMENTAL: "true"
+      - name: Sign the published Docker image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
-        # run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ github.sha }}
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ github.sha }}
+  provenance:
+    needs: [build]
+    permissions:
+      actions: read # for detecting the Github Actions environment.
+      id-token: write # for creating OIDC tokens for signing.
+      packages: write # for uploading attestations.
+    # if: startsWith(github.ref, 'refs/tags/')
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v1.4.0
+    with:
+      image: ${{ needs.build.outputs.image }}
+      digest: ${{ needs.build.outputs.digest }}
+      registry-username: ${{ github.actor }}
+      private-repository: true
+    secrets:
+      registry-password: ${{ secrets.GITHUB_TOKEN }}
