@@ -69,12 +69,12 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           
       - name: docker build
-        run: docker build . -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        run: docker build . -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_id }}
         
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_id }}
           format: 'table'
           exit-code: '0'
           ignore-unfixed: true
@@ -87,7 +87,7 @@ jobs:
       #    image-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
     
       - name: docker push
-        run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_id }}
         
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
@@ -100,7 +100,7 @@ jobs:
           COSIGN_EXPERIMENTAL: "true"
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
-        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ github.sha }}
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_id }}
   provenance:
     needs: [build]
     permissions:
