@@ -33,6 +33,9 @@ jobs:
       # with sigstore/fulcio when running outside of PRs.
       id-token: write
 
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -85,7 +88,15 @@ jobs:
       #  uses: Azure/container-scan@v0
       #  with:
       #    image-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-    
+   
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        id: build
+        with:
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+ 
       - name: docker push
         run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_id }}
         
