@@ -70,9 +70,7 @@ jobs:
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          
 
-      
       # - name: scan image
       #  uses: Azure/container-scan@v0
       #  with:
@@ -99,7 +97,7 @@ jobs:
           COSIGN_EXPERIMENTAL: "true"
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
-        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_id }}
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:nightly
 
       - name: Output image
         id: image
