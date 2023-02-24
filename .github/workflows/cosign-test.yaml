@@ -34,6 +34,7 @@ jobs:
       id-token: write
 
     outputs:
+      image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
       digest: ${{ steps.build.outputs.digest }}
 
     steps:
